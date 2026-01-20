@@ -312,9 +312,16 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
     dependsOn 'reobfJar'
     def propertiesFile = file('api.properties')
     def properties = new Properties()
-    properties.load(new FileInputStream(propertiesFile))
+    if (propertiesFile.exists()) {
+        propertiesFile.withInputStream { properties.load(it) }
+    }
 
     var cfToken = properties.getProperty("CF_TOKEN")
+    if (!cfToken) {
+        enabled = false
+        logger.lifecycle("publishCurseForge disabled: api.properties or CF_TOKEN missing")
+        return
+    }
     apiToken = cfToken
     def versionParts = mod_version.split("-")
 
@@ -341,7 +348,9 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
 publishMods {
     def propertiesFile = file('api.properties')
     def properties = new Properties()
-    properties.load(new FileInputStream(propertiesFile))
+    if (propertiesFile.exists()) {
+        propertiesFile.withInputStream { properties.load(it) }
+    }
     def modrinthTokenGet = properties.getProperty("MODRINTH_TOKEN")
     def versionParts = mod_version.split("-")
 
